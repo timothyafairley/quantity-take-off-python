@@ -1,12 +1,4 @@
 {
-  "version": 2,
-  "functions": {
-    "api/*.py": {
-      "maxDuration": 60,
-      "memory": 1024,
-      "runtime": "python3.12"
-    }
-  },
   "rewrites": [
     {
       "source": "/",
