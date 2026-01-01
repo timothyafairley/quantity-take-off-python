@@ -1,7 +1,7 @@
 # Local development dependencies
 # Install with: pip install -r requirements-local.txt
 
-PyMuPDF==1.24.0
-Flask==3.0.0
-requests==2.31.0
+PyMuPDF>=1.24.0
+Flask>=3.0.0
+requests>=2.31.0
 
