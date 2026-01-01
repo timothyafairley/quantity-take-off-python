@@ -1,0 +1,126 @@
+{
+  "name": "Simple Construction BOQ Extractor",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Simple Construction BOQ Extractor",
+        "formDescription": "Upload a drawing and tell me what quantities to extract",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Drawing PDF",
+              "fieldType": "file",
+              "acceptFileTypes": ".pdf"
+            },
+            {
+              "fieldLabel": "What do you want to extract?",
+              "fieldType": "textarea",
+              "placeholder": "e.g. Count all the light fittings and group by type"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [-1808, 512],
+      "id": "56c6cc09-4707-4842-bda5-d68e2f88b3d9",
+      "name": "On form submission",
+      "webhookId": "e0698853-b87c-47bd-9cb8-f97ae529c02b"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get binary data from the form upload\nconst binaryPropertyName = 'Drawing_PDF';\nconst binaryItem = $input.first().binary[binaryPropertyName];\nconst pdf_base64 = binaryItem.data;\n\n// Pass through the original form data too\nreturn [{\n  json: {\n    pdf_base64: pdf_base64,\n    user_request: $input.first().json['What do you want to extract?']\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1536, 512],
+      "id": "36a616f2-b57f-4f4d-b8c6-e612d34d0879",
+      "name": "Convert PDF to Base64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pdf-extract-api.vercel.app/api/extract",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ pdf_base64: $json.pdf_base64 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [-1280, 512],
+      "id": "9f3255ff-db78-43ee-9e31-754a32b83f46",
+      "name": "Extract PDF Data"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Here is extracted data from a construction drawing:\n\nMarkers found: {{ JSON.stringify($json.markers) }}\n\nAll text elements: {{ JSON.stringify($json.all_text_elements) }}\n\nDrawing info: {{ JSON.stringify($json.drawing_info) }}\n\nUser request: {{ $('Convert PDF to Base64').item.json.user_request }}\n\nPlease analyze this data and extract the quantities as requested by the user."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [-1008, 512],
+      "id": "f9e4d221-4579-4aee-ae7c-a695795ce332",
+      "name": "Analyze with Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DA71jwn9QERNuOHe",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert PDF to Base64": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Data": {
+      "main": [
+        [
+          {
+            "node": "Analyze with Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
