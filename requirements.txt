@@ -1,6 +1,2 @@
-# PDF Processing
+# PDF Processing for Vercel Serverless Functions
 PyMuPDF>=1.24.0
-
-# Note: For Vercel deployment, we use the built-in http.server
-# No Flask needed - Vercel Python runtime handles HTTP
-

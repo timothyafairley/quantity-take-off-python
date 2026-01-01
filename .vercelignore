@@ -1,0 +1,10 @@
+# Ignore local development files
+local_server.py
+quick_test.py
+test_api.py
+requirements-local.txt
+*.pdf
+__pycache__
+.git
+venv
+
